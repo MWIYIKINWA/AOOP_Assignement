@@ -1,14 +1,20 @@
-import javax.swing.JFrame;
-
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import com.mysql.cj.jdbc.result.ResultSetMetaData;
+
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
 
 public class MainBoard extends JFrame
 {
     final private Font mainFont = new Font("Segeo print", Font.BOLD, 18);
     final private Font headerFont = new Font("Segeo print", Font.BOLD, 30);
     final private Font SubheaderFont = new Font("Segeo print", Font.BOLD, 25);
-    JTextField tfFirstName, tfLastName, tfRegNo, tfGender, tfAge, tfSubject;
+    JTextField tfFirstName, tfLastName, tfRegNo, tfGender, tfAge, tfSubject, tfClass;
+    Students students = new Students();
 
     public void initialize()
     {
@@ -22,53 +28,87 @@ public class MainBoard extends JFrame
         JLabel lbFirstName = new JLabel("First Name"); 
         lbFirstName.setFont(mainFont);
 
-        tfFirstName = new JTextField("FirstName");
+        tfFirstName = new JTextField();
         tfFirstName.setFont(mainFont);
 
         JLabel lbLastName = new JLabel("Last Name"); 
         lbLastName.setFont(mainFont);
 
-        tfLastName = new JTextField("LastName");
+        tfLastName = new JTextField();
         tfLastName.setFont(mainFont);
 
         JLabel lbREgNo = new JLabel("Registration Number"); 
         lbREgNo.setFont(mainFont);
 
-        tfRegNo = new JTextField("RegNo");
+        tfRegNo = new JTextField();
         tfRegNo.setFont(mainFont);
 
         JLabel lbGender = new JLabel("Gender"); 
         lbGender.setFont(mainFont);
 
-        tfGender = new JTextField("Gender");
+        tfGender = new JTextField();
         tfGender.setFont(mainFont);
 
         JLabel lbAge = new JLabel("Age"); 
         lbAge.setFont(mainFont);
 
-        tfAge = new JTextField("Age");
+        tfAge = new JTextField();
         tfAge.setFont(mainFont);
 
         JLabel lbSubject = new JLabel("Subject"); 
         lbSubject.setFont(mainFont);
 
-        tfSubject = new JTextField("Subject");
+        tfSubject = new JTextField();
         tfSubject.setFont(mainFont);
 
         JLabel lbClass = new JLabel("Class"); 
         lbClass.setFont(mainFont);
 
-        tfClass = new JTextField("Class");
+        tfClass = new JTextField();
         tfClass.setFont(mainFont);
 
         JButton btnReg = new JButton("REGISTER");
         btnReg.setFont(mainFont);
+        btnReg.addActionListener(new ActionListener(){
 
-        JButton btnUpdate = new JButton("UPDATE");
-        btnUpdate.setFont(mainFont);
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                students.FirstName = tfFirstName.getText();
+                students.LastName = tfLastName.getText();
+                students.Age = tfAge.getText();
+                students.Class = tfClass.getText();
+                students.Gender = tfGender.getText();
+                students.RegNo = tfRegNo.getText();
+                students.Subject = tfSubject.getText();
 
-        JButton btnDelete = new JButton("DELETE");
-        btnDelete.setFont(mainFont);
+                if(students.FirstName.equals("") || 
+                students.LastName.equals("") ||
+                students.Age.equals("") ||
+                students.Class.equals("") ||
+                students.Gender.equals("") ||
+                students.RegNo.equals("") ||
+                students.Subject.equals(""))
+                {
+                    JOptionPane.showMessageDialog(null, 
+                    "All fields are required", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                }
+                else
+                {
+                    students.insertStudent();
+                    JOptionPane.showMessageDialog(null, 
+                    tfFirstName.getText() + " " + tfLastName.getText() + " Successffully registered ", 
+                    "Success", 
+                    JOptionPane.OK_OPTION);
+                }
+                
+            }
+            
+        });
+
+        
 
         JPanel FormPanel = new JPanel();
         FormPanel.setLayout(new GridLayout(0,1,10,10));
@@ -87,14 +127,47 @@ public class MainBoard extends JFrame
         FormPanel.add(lbSubject);
         FormPanel.add(tfSubject);
         FormPanel.add(btnReg);
-        FormPanel.add(btnDelete);
-        FormPanel.add(btnUpdate);
+
+        //grid vieww
+        //layout for logic
+        Vector ColumnNames = new Vector();
+        Vector Rows = new Vector();
+        ResultSetMetaData datamodel = students.getStudents().getMetaData();
+        int columns = datamodel.getColumnCount();
+        for(int i = 1; i <= columns; i++)
+        {
+            ColumnNames.addElement(datamodel.getColumnName(i));
+        }
+        while(students.getStudents().next()){
+            Vector row = new Vector(columns);
+            for(int i; i<=columns; i++)
+            {
+                row.addElement(students.getStudents().getObject(i));
+            }
+
+            Rows.addElement(row);
+
+        }
+         
+
+
+        JTable table = new JTable();
+        JScrollPane scroller = new JScrollPane();
+        scroller.setBounds(10,34,416, 126);
+        scroller.setViewportView(table);
+
+        
+        JPanel tablepanel = new JPanel();
+        tablepanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        tablepanel.add(scroller);
 
 
 
          //....................layout
          add(lbHeading, BorderLayout.NORTH);
          add(FormPanel, BorderLayout.WEST);
+         add(tablepanel, BorderLayout.CENTER);
+
 
 
 
@@ -107,5 +180,8 @@ public class MainBoard extends JFrame
         setVisible(true); 
     
     }
+
+
+
     
 }
